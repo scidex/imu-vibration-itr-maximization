@@ -32,10 +32,12 @@ pinMode ( motorPin4 , OUTPUT );
 }
 
 
-int a[100] = {0};
-int count = 0;
-int packet_Buffer;
+
 char sender;
+char buffer_all[500];
+int count = 0;
+int count_replay = 0;
+char sender_replay;
 
 void loop () {
 int packetSize = Udp . parsePacket ();
@@ -45,85 +47,104 @@ if ( len > 0) packetBuffer [ len -1] = 0;
 Serial . print ( " The ␣ receiving ␣ message ␣ is : ␣ " );
 Serial . println ( packetBuffer );
 
-//packet_Buffer = (int)packetBuffer;
 
-//a[count] = packet_Buffer;
-
-//sender = packet_Buffer;
-//Serial . println ( sender );
 sender = *packetBuffer;
+buffer_all[count] = sender;
+count +=count;
 
-if (sender == '1') 
+
+Serial . println(sender);
+
+long int mytime = millis();
+Serial.print(mytime);
+while(mytime%800 ==0 ){
+sender_replay = buffer_all[count_replay];
+count_replay += count_replay;
+  
+if (sender_replay == '1') 
           {
              digitalWrite ( motorPin1 , LOW );
              digitalWrite ( motorPin2 , HIGH );
              digitalWrite ( motorPin3 , LOW );
              digitalWrite ( motorPin4 , LOW );
           } 
-      else if (sender =='2') 
+      else if (sender_replay =='2') 
           {
              digitalWrite ( motorPin1 , HIGH );
              digitalWrite ( motorPin2 , LOW );
              digitalWrite ( motorPin3 , LOW );
              digitalWrite ( motorPin4 , LOW );
           } 
-      else if (sender =='3')
+      else if (sender_replay =='3')
           {
              digitalWrite ( motorPin1 , HIGH );
              digitalWrite ( motorPin2 , HIGH );
              digitalWrite ( motorPin3 , LOW );
              digitalWrite ( motorPin4 , LOW );
           }
-      else if (sender =='4')
+      else if (sender_replay =='4')
           {
              digitalWrite ( motorPin1 , LOW );
              digitalWrite ( motorPin2 , LOW );
              digitalWrite ( motorPin3 , LOW );
              digitalWrite ( motorPin4 , HIGH );
           }
-      else if (sender =='5')
+      else if (sender_replay =='5')
           {
              digitalWrite ( motorPin1 , LOW );
              digitalWrite ( motorPin2 , LOW );
              digitalWrite ( motorPin3 , HIGH );
              digitalWrite ( motorPin4 , LOW );
           }
-      else if (sender =='6')
+      else if (sender_replay =='6')
           {
              digitalWrite ( motorPin1 , LOW );
              digitalWrite ( motorPin2 , LOW );
              digitalWrite ( motorPin3 , HIGH );
              digitalWrite ( motorPin4 , HIGH );
           }
-      else if (sender =='7')
+      else if (sender_replay =='7')
           {
              digitalWrite ( motorPin1 , LOW );
              digitalWrite ( motorPin2 , HIGH );
              digitalWrite ( motorPin3 , HIGH );
              digitalWrite ( motorPin4 , LOW );
           }
-      else if (sender =='8')
+      else if (sender_replay =='8')
           {
              digitalWrite ( motorPin1 , HIGH );
              digitalWrite ( motorPin2 , LOW );
              digitalWrite ( motorPin3 , LOW );
              digitalWrite ( motorPin4 , HIGH );
           }
-      else if (sender =='9')
+      else if (sender_replay =='9')
           {
              digitalWrite ( motorPin1 , HIGH );
              digitalWrite ( motorPin2 , HIGH );
              digitalWrite ( motorPin3 , HIGH );
              digitalWrite ( motorPin4 , HIGH );
           }
-      else if (sender =='0')
+      else if (sender_replay =='0')
           {
              digitalWrite ( motorPin1 , HIGH );
              digitalWrite ( motorPin2 , LOW );
              digitalWrite ( motorPin3 , HIGH );
              digitalWrite ( motorPin4 , LOW );
           }
+          delay(500);
 
-delay (1000);
+             digitalWrite ( motorPin1 , LOW );
+             digitalWrite ( motorPin2 , LOW );
+             digitalWrite ( motorPin3 , LOW );
+             digitalWrite ( motorPin4 , LOW );
+             delay(300);
+             mytime = 0;
+}
+
+
+
+      
+
+
 }
 }
