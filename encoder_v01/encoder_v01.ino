@@ -33,6 +33,11 @@ float previous_upward = 0.5;
 float previous_upward1 = 0.5;
 float previous_upward2 = 0.5;
 
+float emg_list[300] = {0};
+int emg_list_counter = 0;
+bool muscle_flexed = true;
+float state_change_time = millis();
+
 String state = "Origin";
 bool accumulate_angles = false;
 int number_angles = 0;
@@ -44,7 +49,7 @@ float gyr_z_list[1000] = {0};
 
 void setup () {
   Wire.begin ();
-  Serial . begin (512000);
+  Serial.begin (512000);
   myIMU.init ();
   //yIMU. setAccOffsets ( -16330.0 , 16450.0 , -16600.0 , 16180.0 ,-16520.0 , 16690.0);
   //myIMU. setGyrOffsets ( -115.0 , 130.0 , 105.0);
@@ -67,9 +72,15 @@ void setup () {
   WiFi.mode(WIFI_STA); // ESP -32 as client
   WiFi.config (ipCliente , ipServidor , Subnet );
   Udp.begin (localPort);
+
+  // Setup for emg
+  #define volt_esp32e 5.0
+  #define baud_esp_32e 512000
+  //Serial.begin (baud_esp_32e );
 }
 
 void loop () {
+// IMU
 myIMU. readSensor ();
 xyzFloat gValue = myIMU. getGValues ();
 xyzFloat gyr = myIMU. getGyrValues ();
@@ -238,7 +249,7 @@ if (round(absolute_norm_g * 100.0) / 100.0 > 0.52 && previous_num > 0.52 && prev
 
    // Here the mean angle result is known.
    // Coding scheme:
-   int result_number = -1;
+   int result_number = -2;
    if (max_gyr_z > 0.8 || min_gyr_z < -0.8){
     result_number = 0;
     //state = "Origin";
@@ -352,11 +363,44 @@ previous_upward1 = previous_upward;
 previous_upward = round(norm_gValue.z * 100.0) / 100.0;
 
 
+// EMG
+int sensorValue = analogRead (34);
+float voltage = sensorValue * (volt_esp32e / 4095.0);
+emg_list[emg_list_counter] = sensorValue;
+emg_list_counter += 1;
+emg_list_counter = emg_list_counter % 300;
+float emg_sum = 0;
+for(int i = 0; i < 300; i++){
+  emg_sum += emg_list[i];
+}
+
+float emg_threshold = 4050;
+float mean_emg = emg_sum / 300;
+if (mean_emg <= emg_threshold && muscle_flexed == true){
+  muscle_flexed = false;
+} else if (mean_emg > emg_threshold && muscle_flexed == false && (millis()-state_change_time) > 1000) {
+  muscle_flexed = true;
+  state_change_time = millis();
+  int result_number = -1;
+  Serial.print(result_number);
+  Serial.print(", ");
+  // Send the number per udp:
+  char result_number_char = char(result_number);
+  Udp.beginPacket(ipServidor, 9999); // initiate transmission of data
+  char buf[BUFFER_SIZE]; // buffer to hold the string to append
+  // appending to create a char
+  sprintf(buf, "%d", result_number_char);
+  Udp.printf(buf); // print the char
+  Udp.printf("\r\n"); // end segment
+  Udp.endPacket(); // close communication
+}
+
 /*
 if (previous_upward > 0.7){
   Serial.println(previous_upward);
 }
 */
+
 
 
 
