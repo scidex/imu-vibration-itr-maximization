@@ -64,10 +64,8 @@ Serial . println ( packetBuffer );
 
 if(packetBuffer[1] == '5')
 {
-  //Serial.println("Resetting!");
-  //buffer_all[count-1] =' ';
+
   buffer_all[count] = ' ';
-  //count--;
 }
 
 
@@ -79,31 +77,20 @@ else
   buffer_all[count] = *sender;
 }
 
-//Serial.print("buffer space changed : ");
-//Serial.println(buffer_all);
+
 Serial.print("Write counter: ");
 Serial.println(count);
-//Serial.print("count replay: ");
-//Serial.println(count_replay);
+
 }
 
-
-
-//Serial . println(sender);
-
- 
-mytime = millis();
+mytime = millis();// calculate time since board onset
 
 if (count_loop == 0){
 mytime_pre = mytime;
 }
 
 
-//if(mytime_pre + 1000 < mytime && count_replay < count-1){
-
 if (count -1 > count_replay && mytime_pre + 2000 < mytime&& buffer_all[count_replay+1]!=' ') {
-
-
 
   
 Serial.println("now start reading!");
