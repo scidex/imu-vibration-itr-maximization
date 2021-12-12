@@ -21,6 +21,7 @@ char packetBuffer[500];
 unsigned int localPort = 9999;
 const char * ssid = " ESP32_for_IMU " ;
 const char * password = " ICSESP32IMU " ;
+
 void setup () {
 Serial . begin (512000);
 WiFi . softAP ( ssid , password ); // ESP32 as access point
@@ -34,50 +35,51 @@ pinMode ( motorPin4 , OUTPUT );
 
 
 char *sender;
-char buffer_all[500];
+char buffer_all[500];//buffer
+
+int count = -1; // pointer for writing the buffer
 // We set this to -1 because we do the following:
 // The counter reflects the position last written to/read from.
 // This means that if they're equal, we can't read anymore.
-// Also, this is done because if not, having both be 0
-// would mean that we either could read from it at position 0,
-// or we can't read from it, but then updating the pointer would
-// mean we start at 1.
-int count = -1;
-int count_replay = -2;
-char sender_replay;
-int count_loop =0;
-long int mytime;
-long int mytime_pre;
+
+int count_replay = -2; //pointer for reading the buffer
+int count_loop =0; // loop counter for the whole loop process
+long int mytime; // count the time since board onset
+long int mytime_pre; // record the time where last reading happens
 
 
 
 void loop () {
-int packetSize = Udp . parsePacket ();
+ 
+// receive message
+int packetSize = Udp . parsePacket (); 
 if ( packetSize) {
 
 int len = Udp . read ( packetBuffer,255);
 if ( len > 0) packetBuffer [ len -1] = 0;
-//Serial . print ( " The ␣ receiving ␣ message ␣ is : ␣ " );
+
+//print the received number
 Serial.print("Packet received: ");
 Serial . println ( packetBuffer );
 
-
+// -1 which used as correction will be transferred to "255" in char
+// so we check whether the second char of the string is 5, if so, this is a correction signal
+// then we set current position in buffer to a blank
+  
 if(packetBuffer[1] == '5')
 {
-
   buffer_all[count] = ' ';
 }
 
-
+// writing the buffer
 else
 {
-  //Serial.println("Storing start!");
   sender =  packetBuffer;
   count ++;
   buffer_all[count] = *sender;
 }
 
-
+// print what is written into the buffer
 Serial.print("Write counter: ");
 Serial.println(count);
 
@@ -85,30 +87,35 @@ Serial.println(count);
 
 mytime = millis();// calculate time since board onset
 
+//only for the first loop,set mytime and mytime_pre to be equal
 if (count_loop == 0){
 mytime_pre = mytime;
 }
 
-
+// if two pointers has at least two position in between(in case of there is a correction blank)
+// and last reading has been at least 2000 ms away from current writing(time-delay for replaying)
 if (count -1 > count_replay && mytime_pre + 2000 < mytime&& buffer_all[count_replay+1]!=' ') {
 
-  
 Serial.println("now start reading!");
 mytime_pre = mytime;
 count_replay++;
+  
+//read buffer
 if (count_replay >= 0) {
-sender_replay = buffer_all[count_replay];
+sender_replay = buffer_all[count_replay]; //read
 
+// print the reading pointer  
 Serial.print("Read counter: ");
 Serial.println(count_replay);
+  
+//print the replay number  
 Serial.print("Reading: ");
 Serial.println(buffer_all[count_replay]);
-
 
 Serial.print("buffer space :");
 Serial.println(buffer_all);
 
-  
+// vibrate  
 if (sender_replay == '1') 
           {
              digitalWrite ( motorPin1 , LOW );
