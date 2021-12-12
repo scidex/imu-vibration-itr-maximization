@@ -1,3 +1,12 @@
+/*
+ * 
+ * This script can be used for the encoder side. An IMU can be used for encoding the numbers 0-9.
+ * In addition an EMG can be used for increasing accuracy. No changes in the code have to be made if it is decided that no EMG correction is needed.
+ * Make sure that the IP-adreee specified in the IP block is not occupied by another device in the same network yet!
+ * 
+ */
+
+
 # include <Wire.h>
 # include <math.h>
 # include <ICM20948_WE.h>
@@ -25,6 +34,7 @@ IPAddress ipServidor (192 , 168, 4, 1);
 IPAddress ipCliente (192 , 168, 4, 170); // different IP than server
 IPAddress Subnet (255 , 255, 255, 0);
 
+// Initializing scalar and list variables for storing measurements and states
 float previous_num = 0.5;
 float previous_num1 = 0.5;
 float previous_num2 = 0.5;
@@ -48,15 +58,13 @@ float acc_z_list[1000] = {0};
 float gyr_z_list[1000] = {0};
 
 void setup () {
+
+  // Setup for IMU
   Wire.begin ();
   Serial.begin (512000);
   myIMU.init ();
-  //yIMU. setAccOffsets ( -16330.0 , 16450.0 , -16600.0 , 16180.0 ,-16520.0 , 16690.0);
-  //myIMU. setGyrOffsets ( -115.0 , 130.0 , 105.0);
-  //Serial . println (" Position ␣your␣ ICM20948 ␣flat␣and␣don ’t␣move␣it␣-␣␣ calibrating ...");
   delay (1000);
   myIMU. autoOffsets ();
-  // Serial . println ("Done!");
   myIMU. enableAcc (true );
   myIMU. enableGyr (true );
   myIMU. setAccRange ( ICM20948_ACC_RANGE_2G );
@@ -67,37 +75,41 @@ void setup () {
   myIMU. setGyrSampleRateDivider (10);
   myIMU. setMagOpMode ( AK09916_CONT_MODE_20HZ );
 
-  // Setup for udp:
+  // Setup udp:
   WiFi.begin(ssid , password );
   WiFi.mode(WIFI_STA); // ESP -32 as client
   WiFi.config (ipCliente , ipServidor , Subnet );
   Udp.begin (localPort);
 
-  // Setup for emg
+  // Setup EMG
   #define volt_esp32e 5.0
   #define baud_esp_32e 512000
-  //Serial.begin (baud_esp_32e );
 }
 
 void loop () {
-// IMU
+// Defining storage variables and initializing them with current IMU measurement values
 myIMU. readSensor ();
-xyzFloat gValue = myIMU. getGValues ();
-xyzFloat gyr = myIMU. getGyrValues ();
-// returns magnetic flux ensity [ microT ]
-xyzFloat magValue = myIMU. getMagValues ();
-float resultantG = myIMU. getResultantG ( gValue );
-// For g- values the corrected raws are used
-// Serial . println (" Acceleration ␣in␣g␣(x,y,z):");
+xyzFloat gValue = myIMU.getGValues();
+xyzFloat gyr = myIMU.getGyrValues();
+xyzFloat magValue = myIMU.getMagValues();
+float resultantG = myIMU.getResultantG(gValue);
 
 
-//Change x and y directions:
+// Transformation into xyz coordinate system proposed in the report:
+//
+//     z-axis (up)
+//     ^   y-axis (forward)
+//     |  7
+//     | /
+//     |/
+//     +-----------> x-axis (to RHS)
+
 xyzFloat norm_gValue;
 norm_gValue.x = - gValue.x / 2;
 norm_gValue.y = - gValue.y / 2;
 norm_gValue.z = gValue.z / 2;
 
-
+// Normalizing gyroscope values
 xyzFloat norm_gyr;
 norm_gyr.x = gyr.x / 250;
 norm_gyr.y = gyr.y / 250;
@@ -108,46 +120,17 @@ norm_mag.x = magValue.x;
 norm_mag.y = magValue.y;
 norm_mag.z = magValue.z;
 
-/*
-Serial.print("Acc_x:");
-Serial.print(norm_gValue.x);
-Serial.print(",");
-Serial.print("Acc_y:");
-Serial.print(norm_gValue.y);
-Serial.print(",");
-Serial.print("Acc_z:");
-Serial.print(norm_gValue.z);
 
-Serial.print(",");
-
-Serial.print("Gyr_x:");
-Serial.print(norm_gyr.x);
-Serial.print(",");
-Serial.print("Gyr_y:");
-Serial.print(norm_gyr.y);
-Serial.print(",");
-Serial.print("Gyr_z:");
-Serial.println(norm_gyr.z);
-*/
-
-
-// Differentiaion of trials:
+// Transformation from Cartesian coordinates into Spherical coordinates
+// r = absolute_norm_g
 float absolute_norm_g = sqrt(sq(norm_gValue.x) + sq(norm_gValue.y) + sq(norm_gValue.z));
 float theta =  fmod(((atan2(norm_gValue.y, norm_gValue.x)* 360 / (2*M_PI)) + 360), 360); // horizontal plane
 float phi = acos(norm_gValue.z / absolute_norm_g);
 
-// TODO: Make it insensitive to rotation.
-/*if (previous_upward > 0.6 && previous_upward1 < 0.6 && previous_upward2 < 0.6 && state == "Origin"){
-  state = "Upwards";
-  Serial.println();
-  Serial.println();
-  Serial.println(state);
-  Serial.println("Result: 9 (moving upward)");
-} else if(state == "Upwards" && (previous_upward > 0.48) && (previous_upward1 < 0.48) && (previous_upward2 < 0.48)){
-  Serial.println("Downward");
-  state = "Origin";
-  Serial.println(state);
-  Serial.println();*/
+// Introducing several conditions for number encoding:
+// 1. absolute acceleration as well as the the previous two acceleration measurements must be greater than threshold
+// 2. The state must be Oritin or Outward
+// Accumulating angles is started
 if (round(absolute_norm_g * 100.0) / 100.0 > 0.52 && previous_num > 0.52 && previous_num1 > 0.52 && previous_num2 > 0.52  && (state == "Origin" || state == "Outward")) {
   if (state == "Origin") {
     state = "Moving outward";
@@ -159,28 +142,21 @@ if (round(absolute_norm_g * 100.0) / 100.0 > 0.52 && previous_num > 0.52 && prev
     state = "Moving inward";
     Serial.println(state);
   }
+// Conditions for detecting the Outward state:
+// 1. absolute acceleration is at baseline (0.5)
+// 2. State is moving Outward or moving inward
 } else if (round(absolute_norm_g * 100.0) / 100.0 == 0.50 && previous_num == 0.50 && previous_num1 == 0.50 && previous_num2 == 0.50 && (state == "Moving outward" || state == "Moving inward")) {
   if (state == "Moving outward") {
     state = "Outward";
-    //Serial.println(state);
     accumulate_angles = false;
+
+    // Detecting the minimum and maximum acceleration, and gyroscope value around the z axis
     float max_angle = 0;
     float min_angle = 360;
     float max_acc = -100;
     float min_acc = 100;
     float max_gyr_z = -100;
     float min_gyr_z = 100;
-
-   //Serial.print("Number of angles: ");
-   //Serial.println(number_angles);
-   //Serial.println();
-
-   /*
-   for (int i = 0; i < number_angles; i++){
-      Serial.println(angle_list[number_angles]);
-   }
-   */
-   
 
    for (int i = 0; i < number_angles; i++){
       //Serial.println(angle_list[i]);
@@ -207,79 +183,61 @@ if (round(absolute_norm_g * 100.0) / 100.0 > 0.52 && previous_num > 0.52 && prev
       }
    }
 
-   //Serial.print("Max angle: ");
-   //Serial.println(max_angle);
-   //Serial.print("Min angle");
-   //Serial.println(min_angle);
-
+   // Moving to the right hand side must be evaluated as an extra case.
+   // Example in a coordinate system with x-axis to right (0°), y-axis upwards (90°), negative y-axis (270°)
+   // Hence, if moving right values between 0°-22.5° and 337.5°-360° are encountered. Taking the average here would give a result of ~180° and would hence point in negative x-direction, which is wrong.
+   // Hence, a correction must be performed:
    if ((max_angle - min_angle) > 330){
-    //Serial.println("Special: Right direction");
-     // cumulative_angle = 0;
    
       for (int i = 0; i < number_angles; i++){
         if (angle_list[i] < 180){
-          //cumulative_angle += (angle_list[number_angles] + 360)
           cumulative_angle += 360;
-        //}else{
-        //  cumulative_angle += angle_list[number_angles]
-        //}
         }
       }
-      
-    
-    //Serial.println((cumulative_angle / number_angles) * 360 / (2*M_PI));
    }
    float mean_angle = fmod((cumulative_angle / number_angles), 360);
+
+   // Now, the mean angle is known and this mean angle is translated into the number encoding
+   int result_number = -2; // Default number -2 if encounting went wrong. -1 is used for resetting
+   if (max_gyr_z > 0.8 || min_gyr_z < -0.8){
+
+   // Horizontal encoding scheme:
    /*
-   Serial.print("Max acc_z: ");
-   Serial.println(max_acc);
-
-   Serial.print("Min acc_z: ");
-   Serial.println(min_acc);
-
-   Serial.print("Max gyr_z: ");
-   Serial.println(max_gyr_z);
-
-   Serial.print("Min gyr_z: ");
-   Serial.println(min_gyr_z);
-   
-   Serial.print("Mean angle: ");
-   Serial.println(mean_angle);
+   3: 0 degrees, range: -22.5 (or 337.5) to 22.5
+   2: 45 degrees, range: 22.5 to 67.5
+   1: 90 degrees, range: 67.5 to 112.5
+   8: 135 degrees, range: 112.5 to 157.5
+   7: 180 degrees, range: 157.5 to 202.5
+   6: 225 degrees, range: 202.5 to 247.5
+   5: 270 degrees, range: 247.5 to 292.5
+   4: 315 degrees, range: 292.5 to 337.5
    */
 
-   // Here the mean angle result is known.
-   // Coding scheme:
-   int result_number = -2;
-   if (max_gyr_z > 0.8 || min_gyr_z < -0.8){
-    result_number = 0;
-    //state = "Origin";
-    //Serial.println(state);
-    //delay(100);
+   // result_number holds the encoded number, the angle is specified in a polar coordinate system
+   result_number = 0;
+   // Upwards direction detection using the z-acceleration value for a threshold condition
    } else if (max_acc > 0.8){
-    result_number = 9;
-    //state = "Origin";
-    //Serial.println(state);
-    //delay(100);
+    result_number = 9; // upwards
    }else if (mean_angle <= 22.5 or mean_angle > 337.5){
-    result_number = 3;
+    result_number = 3; // 0°
    }else if(mean_angle > 22.5 and mean_angle <= 67.5){
-    result_number = 2;
+    result_number = 2; // 45°
    }else if(mean_angle > 67.5 and mean_angle <= 112.5){
-    result_number = 1;
+    result_number = 1; //90°
    }else if(mean_angle > 112.5 and mean_angle <= 157.5){
-    result_number = 8;
+    result_number = 8; //135°
    }else if(mean_angle > 157.5 and mean_angle <= 202.5){
-    result_number = 7;
+    result_number = 7; // 180°
    }else if(mean_angle > 202.5 and mean_angle <= 247.5){
-    result_number = 6;
+    result_number = 6; // 225°
    }else if(mean_angle > 247.5 and mean_angle <= 292.5){
-    result_number = 5;
+    result_number = 5; // 270°
    }else if(mean_angle > 292.5 and mean_angle <= 337.5){
-    result_number = 4;
+    result_number = 4; // 215°
    }
 
    state = "Origin";
-   //Serial.println(state);
+   // Giving feedback to the decoding participant
    Serial.print(result_number);
    Serial.print(", ");
 
@@ -292,67 +250,33 @@ if (round(absolute_norm_g * 100.0) / 100.0 > 0.52 && previous_num > 0.52 && prev
    Udp.printf(buf); // print the char
    Udp.printf("\r\n"); // end segment
    Udp.endPacket(); // close communication
-   //Serial.print("The␣ sending ␣ message ␣is:␣");
-   //Serial.println(buf);
-
    delay(300);
 
-   //Serial.print("Result angle: ");
-
-
-
-   /*
-   3: 0 degrees, range: -22.5 (or 337.5) to 22.5
-   2: 45 degrees, range: 22.5 to 67.5
-   1: 90 degrees, range: 67.5 to 112.5
-   8: 135 degrees, range: 112.5 to 157.5
-   7: 180 degrees, range: 157.5 to 202.5
-   6: 225 degrees, range: 202.5 to 247.5
-   5: 270 degrees, range: 247.5 to 292.5
-   4: 315 degrees, range: 292.5 to 337.5
-   */
-
-
-
-   
-
-   // Systems engineering: Divide and conquer: test subsystems individually, stack them together later.
-   // Give numbers for the whole subsystem. (30 bits per minute.
-   // --> one can say which one has to be improved!
-   /* EMG: removing numbers
-    * 0: 
-    * 
-    * 
-    * Work on skeleton models: First: Go for a very simple model, then improve it.
-    * Do recordings! (with a camera!)
-    * 
-    * 
-    */
-
-
-   
+  // Resetting state to Origin after the movement was performed
   } else if (state == "Moving inward") {
     state = "Origin";
     Serial.println(state);
     Serial.println();
     
   }
+  // Introducing a short delay of 200ms to be sure that the movement is over
   delay(200);
 }
 
+// Appending the current theta angle to a list which is evaluated to obtain the mean angle
+// The same is done with the acceleration and gyroscope values in z-direction
 if (accumulate_angles == true){
   angle_list[number_angles] = theta;
   acc_z_list[number_angles] =  round(norm_gValue.z * 100.0) / 100.0;
   gyr_z_list[number_angles] = round(norm_gyr.z * 100.0) / 100.0;
-  //Serial.println("Theta: ");
-  //Serial.println(theta);
 
   number_angles++;
   cumulative_angle += theta;
-  float mean_angle = cumulative_angle / number_angles;
-  //Serial.println(mean_angle);
+  float mean_angle = cumulative_angle / number_angles; // Current mean angle
 }
 
+
+// Storing the previous values for the threshold conditions
 previous_num2 = previous_num1;
 previous_num1 = previous_num;
 previous_num = round(absolute_norm_g * 100.0) / 100.0;
@@ -363,9 +287,11 @@ previous_upward1 = previous_upward;
 previous_upward = round(norm_gValue.z * 100.0) / 100.0;
 
 
-// EMG
+// Using an EMG for resetting the last encoded number
 int sensorValue = analogRead (34);
 float voltage = sensorValue * (volt_esp32e / 4095.0);
+// Measuring the sensor value and storing it for mean evaluation 
+// The last 300 sample measurements are stored.
 emg_list[emg_list_counter] = sensorValue;
 emg_list_counter += 1;
 emg_list_counter = emg_list_counter % 300;
@@ -375,84 +301,32 @@ for(int i = 0; i < 300; i++){
 }
 
 float emg_threshold = 4050;
+// Obtaining the mean emg value
+
 float mean_emg = emg_sum / 300;
+// EMG condition for defaultly setting the mu
+// 1. Mean EMG value is smaller than threshold
+// 2. Muscle is flexed already
 if (mean_emg <= emg_threshold && muscle_flexed == true){
   muscle_flexed = false;
+// Condition for detection muscle flexion:
+// 1. Threshold is exceeded
+// 2. Muscle is not flexed yet
+// 3. The previous resetting lies at least 1 second in the past.
 } else if (mean_emg > emg_threshold && muscle_flexed == false && (millis()-state_change_time) > 1000) {
   muscle_flexed = true;
   state_change_time = millis();
-  int result_number = -1;
+  int result_number = -1; // -1 is sent via UDP for resetting on the receiver side
+  // Printing to give the encoder participant feedback
   Serial.print(result_number);
   Serial.print(", ");
-  // Send the number per udp:
+  // Send the number per UDP:
   char result_number_char = char(result_number);
   Udp.beginPacket(ipServidor, 9999); // initiate transmission of data
   char buf[BUFFER_SIZE]; // buffer to hold the string to append
-  // appending to create a char
   sprintf(buf, "%d", result_number_char);
   Udp.printf(buf); // print the char
   Udp.printf("\r\n"); // end segment
   Udp.endPacket(); // close communication
 }
-
-/*
-if (previous_upward > 0.7){
-  Serial.println(previous_upward);
-}
-*/
-
-
-
-
-//Serial.print("G_norm:");
-//Serial.println(absolute_norm_g);
-//Serial.println(state);
-//Serial.print(",");
-//Serial.print("Theta:");
-//Serial.print(theta);
-//Serial.print(",");
-//Serial.print("Phi:");
-//Serial.println(phi);
-
-
-
-/*
-Serial.print(",");
-
-
-Serial.print("Mag_x:");
-Serial.print(magValue.x);
-Serial.print(",");
-Serial.print("Mag_y:");
-Serial.print(magValue.y);
-Serial.print(",");
-Serial.print("Mag_z:");
-Serial.println(magValue.z);
-*/
-
-
-/*
-Serial . print("␣␣␣");
-Serial . print( gValue .y);
-Serial . print("␣␣␣");
-Serial . println ( gValue .z);
-// The resulting acceleration from a g-value triple :
-// The absolute value of the sum of the three vectors
-Serial . print(" Resultant ␣g:␣");
-Serial . println ( resultantG );
-Serial . println (" Gyroscope ␣data␣in␣ degrees /s:␣");
-Serial . print(gyr.x);
-Serial . print("␣␣␣");
-Serial . print(gyr.y);
-Serial . print("␣␣␣");
-Serial . println (gyr.z);
-Serial . println (" Magnetometer ␣Data␣in␣ microTesla :␣");
-Serial . print( magValue .x);
-Serial . print("␣␣␣");
-Serial . print( magValue .y);
-Serial . print("␣␣␣");
-Serial . println ( magValue .z);
-Serial . println (" ******************************************** ");
-delay (500);
-*/
 }
