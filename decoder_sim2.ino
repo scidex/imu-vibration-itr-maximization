@@ -99,74 +99,9 @@ void loop ()
     digitalWrite ( motorPin2 , LOW );
     delay(750);       
   }
-  /*
-  while(1)
-
-    {
-      digitalWrite(motorPin1, LOW);
-      digitalWrite(motorPin2, HIGH);
-      digitalWrite(motorPin3, LOW);
-      digitalWrite(motorPin4, HIGH);
-      delay(2000);  
-      
-      digitalWrite(motorPin2, LOW);
-      digitalWrite(motorPin3, LOW);
-      digitalWrite(motorPin4, LOW);
-      digitalWrite(motorPin1, LOW);
-      delay(1000);
-      
-      digitalWrite(motorPin1, HIGH);
-      digitalWrite(motorPin2, LOW);
-      digitalWrite(motorPin3, LOW);
-      digitalWrite(motorPin4, LOW);
-      delay(2000);
-      
-      digitalWrite(motorPin2, LOW);
-      digitalWrite(motorPin3, LOW);
-      digitalWrite(motorPin4, LOW);
-      digitalWrite(motorPin1, LOW);
-      delay(1000);
-
-      digitalWrite(motorPin1, LOW);
-      digitalWrite(motorPin2, LOW);
-      digitalWrite(motorPin3, HIGH);
-      digitalWrite(motorPin4, LOW);
-      delay(2000);
-      
-      digitalWrite(motorPin2, LOW);
-      digitalWrite(motorPin3, LOW);
-      digitalWrite(motorPin4, LOW);
-      digitalWrite(motorPin1, LOW);
-      delay(1000);
-
-      digitalWrite(motorPin1, LOW);
-      digitalWrite(motorPin2, HIGH);
-      digitalWrite(motorPin3, HIGH);
-      digitalWrite(motorPin4, LOW);
-      delay(2000);
-      
-      digitalWrite(motorPin2, LOW);
-      digitalWrite(motorPin3, LOW);
-      digitalWrite(motorPin4, LOW);
-      digitalWrite(motorPin1, LOW);
-      delay(1000);
-  */
-  
-      
-    }
+ }
+ 
 }
 
 
 
-//digitalWrite ( motorPin1 , HIGH );
-//digitalWrite ( motorPin2 , HIGH );
-//digitalWrite ( motorPin3 , HIGH );
-//digitalWrite ( motorPin4 , HIGH );
-//delay (1000);
-
-//digitalWrite ( motorPin1 , LOW );
-//digitalWrite ( motorPin2 , LOW );
-//digitalWrite ( motorPin3 , LOW );
-//digitalWrite ( motorPin4 , LOW );
-
-//delay (1000);
