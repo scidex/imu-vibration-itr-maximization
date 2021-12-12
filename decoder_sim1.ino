@@ -15,41 +15,6 @@ pinMode ( motorPin4 , OUTPUT );
 
 void loop ()
 {
-
-
-/*  
-  digitalWrite(motorPin3, HIGH);
-  delay(1000);
-
-  digitalWrite(motorPin3, LOW);
-  delay(1000);
-
-
-  digitalWrite(motorPin4, HIGH);
-  delay(2000);
-
-  digitalWrite(motorPin4, LOW);
-  delay(2000);
-
-*/
- /* digitalWrite(motorPin3, HIGH);
-  delay(1000);
-
-  digitalWrite(motorPin3, LOW);
-  delay(1000);
-
-/*
-  digitalWrite(motorPin4, HIGH);
-  delay(2000);
-
-  digitalWrite(motorPin4, LOW);
-  delay(2000);
-  */
-     
-
-  
-  
-/*
   for (int sender = 0; sender <= 9.; sender++) 
   {    
     if (sender == 1) 
@@ -131,61 +96,6 @@ void loop ()
     delay(1000);
         
   }
-  */
-  while(1)
 
-    {
-      digitalWrite(motorPin1, LOW);
-      digitalWrite(motorPin2, HIGH);
-      digitalWrite(motorPin3, HIGH);
-      digitalWrite(motorPin4, HIGH);
-      delay(2000);  
-      
-      digitalWrite(motorPin2, LOW);
-      digitalWrite(motorPin3, LOW);
-      digitalWrite(motorPin4, LOW);
-      digitalWrite(motorPin1, LOW);
-      delay(1000);
-      
-      digitalWrite(motorPin1, HIGH);
-      digitalWrite(motorPin2, HIGH);
-      digitalWrite(motorPin3, HIGH);
-      digitalWrite(motorPin4, LOW);
-      delay(2000);
-      
-      digitalWrite(motorPin2, LOW);
-      digitalWrite(motorPin3, LOW);
-      digitalWrite(motorPin4, LOW);
-      digitalWrite(motorPin1, LOW);
-      delay(1000);
-
-      digitalWrite(motorPin1, HIGH);
-      digitalWrite(motorPin2, LOW);
-      digitalWrite(motorPin3, HIGH);
-      digitalWrite(motorPin4, LOW);
-      delay(2000);
-      
-      digitalWrite(motorPin2, LOW);
-      digitalWrite(motorPin3, LOW);
-      digitalWrite(motorPin4, LOW);
-      digitalWrite(motorPin1, LOW);
-      delay(1000);
-      
-      
-    }
 }
 
-
-
-//digitalWrite ( motorPin1 , HIGH );
-//digitalWrite ( motorPin2 , HIGH );
-//digitalWrite ( motorPin3 , HIGH );
-//digitalWrite ( motorPin4 , HIGH );
-//delay (1000);
-
-//digitalWrite ( motorPin1 , LOW );
-//digitalWrite ( motorPin2 , LOW );
-//digitalWrite ( motorPin3 , LOW );
-//digitalWrite ( motorPin4 , LOW );
-
-//delay (1000);
