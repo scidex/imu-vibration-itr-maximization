@@ -107,6 +107,8 @@ It will take a couple of minutes until you learn the decoding. If the decoding i
 
 - encoder.ino: Encoder: runs udpClient board, i.e ESP32E
 
+- decoder_sim1.ino; decoder_sim2.ino: two different decoding methods
+
 - System_Analysis.ipynb:  is the jupyter notebook for all the data analysis
 
 - performance_calculation.py: Utils for calculating ITR and accuracy
