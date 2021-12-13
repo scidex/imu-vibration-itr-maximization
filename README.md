@@ -44,7 +44,7 @@ Full System:
 
 Now connect the third and fourth motors analogously to the second one. Don't forget to set the correct pins in the decoding.ino file!
 
-4. Set an IP-address which is not yet occupied in the local WLAN network. Di this in the encoder.ino file.
+4. Set an IP-address which is not yet occupied in the local WLAN network. Do this in the encoder.ino file.
 
 5. Run the decoder.ino file after the encoder has been pushed to the device.
 
@@ -60,7 +60,7 @@ Fix a paper to a table and draw the following figure onto the paper.
 
 <img src="https://github.com/scidex/imu-vibration-itr-maximization/blob/main/figures/encoding_sketch.jpeg?raw=true" width="400" height="570">
 
-The encoding works as follows:
+The horizontal linear movement encoding works as follows:
 
 1: 90 degrees, range: 67.5 to 112.5
 
