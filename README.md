@@ -63,12 +63,19 @@ Fix a paper to a table and draw the following figure onto the paper.
 The encoding works as follows:
 
 1: 90 degrees, range: 67.5 to 112.5
+
 2: 45 degrees, range: 22.5 to 67.5
+
 3: 0 degrees, range: -22.5 (or 337.5) to 22.5
+
 4: 315 degrees, range: 292.5 to 337.5
+
 5: 270 degrees, range: 247.5 to 292.5
+
 6: 225 degrees, range: 202.5 to 247.5
+
 7: 180 degrees, range: 157.5 to 202.5
+
 8: 135 degrees, range: 112.5 to 157.5
 
 - For encoding the numbers 1-8 make fast movements away from the origin to the number written on the paper and back to the origin.
