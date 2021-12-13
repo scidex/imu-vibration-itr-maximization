@@ -29,15 +29,15 @@ Full System:
 
 1. Connect the IMU as follows:
 
-![alt text](https://github.com/scidex/imu-vibration-itr-maximization/blob/figures/IMUsetup.png?raw=true)
+![](https://github.com/scidex/imu-vibration-itr-maximization/blob/main/figures/IMUsetup.png?raw=true)
 
 2. Connect the EMG as follows:
 
-![alt text](https://github.com/scidex/imu-vibration-itr-maximization/blob/figures/EMGsetup.png?raw=true)
+![](https://github.com/scidex/imu-vibration-itr-maximization/blob/main/figures/EMGsetup.png?raw=true)
 
 3. Connect the first two vibrotactile motors as follows:
 
-![alt text](https://github.com/scidex/imu-vibration-itr-maximization/blob/figures/VIBRATORSsetup.png?raw=true)
+![](https://github.com/scidex/imu-vibration-itr-maximization/blob/main/figures/VIBRATORSsetup.png?raw=true)
 
 Now connect the third and fourth motors analogously to the second one. Don't forget to set the correct pins in the decoding.ino file!
 
