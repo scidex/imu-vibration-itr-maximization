@@ -8,7 +8,7 @@ This repository can be used for transmitting data between rooms via local WLAN n
 
 Encoding Subsystem:
 1. ESP32E
-2. IMU
+2. IMU ICM-20948
 3. EMG (optional)
 4. USB connector (1x)
 5. wires (7x)
@@ -27,7 +27,27 @@ Full System:
 
 ## How can I set the system up?
 
-1. Connect the
+1. Connect the IMU as follows:
+
+![alt text](https://github.com/scidex/imu-vibration-itr-maximization/blob/figures/IMUsetup.png?raw=true)
+
+2. Connect the EMG as follows:
+
+![alt text](https://github.com/scidex/imu-vibration-itr-maximization/blob/figures/EMGsetup.png?raw=true)
+
+3. Connect the first two vibrotactile motors as follows:
+
+![alt text](https://github.com/scidex/imu-vibration-itr-maximization/blob/figures/VIBRATORSsetup.png?raw=true)
+
+Now connect the third and fourth motors analogously to the second one. Don't forget to set the correct pins in the decoding.ino file!
+
+4. Set an IP-address which is not yet occupied in the local WLAN network. Di this in the encoder.ino file.
+
+5. Run the decoder.ino file after the encoder has been pushed to the device.
+
+6. Open the Arduino monitor on the laptop running on the decoder side and set the baud rate to 500000. This enables feedback for the encoder.
+
+7. Now you are ready to go!
 
 ## File index
 
