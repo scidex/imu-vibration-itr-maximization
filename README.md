@@ -58,7 +58,7 @@ Now connect the third and fourth motors analogously to the second one. Don't for
 
 Fix a paper to a table and draw the following figure onto the paper.
 
-<img src="https://github.com/scidex/imu-vibration-itr-maximization/blob/main/figures/encoding_sketch.jpeg?raw=true" width="400" height="600">
+<img src="https://github.com/scidex/imu-vibration-itr-maximization/blob/main/figures/encoding_sketch.jpeg?raw=true" width="400" height="570">
 
 The encoding works as follows:
 
@@ -89,7 +89,7 @@ For decoding, place the vibrators according to the connection to your microcontr
 
 The decoding scheme is shown in the following figure:
 
-![](https://github.com/scidex/imu-vibration-itr-maximization/blob/main/figures/decoding.png?raw=true)
+<img src="https://github.com/scidex/imu-vibration-itr-maximization/blob/main/figures/decoding.png?raw=true" width="291" height="600">
 
 Let's look at two examples:
 
