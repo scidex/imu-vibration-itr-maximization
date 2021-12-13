@@ -58,7 +58,7 @@ Now connect the third and fourth motors analogously to the second one. Don't for
 
 Fix a paper to a table and draw the following figure onto the paper.
 
-![](https://github.com/scidex/imu-vibration-itr-maximization/blob/main/figures/encoding_sketch.jpeg?raw=true)
+<img src="https://github.com/scidex/imu-vibration-itr-maximization/blob/main/figures/encoding_sketch.jpeg?raw=true" width="800" height="600">
 
 The encoding works as follows:
 
